@@ -1,107 +1,81 @@
-<<<<<<< HEAD
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import MemeReel from "./components/MemeReel";
 import SplashScreen from "./components/SplashScreen";
 import CommentModal from "./components/CommentModal";
 
-const App = () => {
-  const [showSplashScreen, setShowSplashScreen] = useState(true);
-  const splashScreenLoadedRef = useRef(null);
-
-  const [userId] = useState("demo-user");
-
-  const [showCommentModal, setShowCommentModal] = useState(false);
-  const [commentVideoId, setCommentVideoId] = useState(null);
-
-=======
-import React, { useState, useRef, useEffect } from 'react';
-import MemeReel from '../components/MemeReel';
-import SplashScreen from '../components/SplashScreen';
-import CommentModal from '../components/CommentModal'; // Import CommentModal here
-
 // Firebase imports
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { Loader2 } from 'lucide-react';
+import { initializeApp } from "firebase/app";
+import {
+  getAuth,
+  signInAnonymously,
+  signInWithCustomToken,
+  onAuthStateChanged,
+} from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { Loader2 } from "lucide-react";
 
-// Main App Component
 const App = () => {
   const [showSplashScreen, setShowSplashScreen] = useState(true);
   const splashScreenLoadedRef = useRef(null);
+
+  // Firebase state
   const [db, setDb] = useState(null);
   const [auth, setAuth] = useState(null);
   const [userId, setUserId] = useState(null);
   const [firebaseInitialized, setFirebaseInitialized] = useState(false);
 
-  // State for Comment Modal
+  // Comment modal state
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [commentVideoId, setCommentVideoId] = useState(null);
 
-  // Get app ID with a fallback for local development
-  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-gigglegrid-app-id';
+  // App ID with fallback
+  const appId =
+    typeof __app_id !== "undefined"
+      ? __app_id
+      : "default-gigglegrid-app-id";
 
-  // Function to open the comment modal for a specific video
->>>>>>> 7111d9b590bdd83fd1a41192bc7adbfffae00982
+  // Open comment modal
   const handleOpenComments = (videoId) => {
     setCommentVideoId(videoId);
     setShowCommentModal(true);
   };
 
-<<<<<<< HEAD
-=======
-  // Function to close the comment modal
->>>>>>> 7111d9b590bdd83fd1a41192bc7adbfffae00982
+  // Close comment modal
   const handleCloseComments = () => {
     setShowCommentModal(false);
     setCommentVideoId(null);
   };
 
-<<<<<<< HEAD
-  return (
-    <div className="min-h-screen w-screen bg-gray-950 text-gray-50 p-6">
-      {showSplashScreen && <SplashScreen onLoaded={splashScreenLoadedRef} />}
-
-      <h1 className="text-4xl font-bold mb-6">
-        Giggle<span className="text-red-400">Grid</span>
-      </h1>
-
-      <MemeReel
-        onInitialVideosLoaded={() => {
-          if (splashScreenLoadedRef.current) {
-            splashScreenLoadedRef.current();
-          }
-          setTimeout(() => setShowSplashScreen(false), 500);
-        }}
-        onOpenComments={handleOpenComments}
-      />
-
-      {showCommentModal && (
-        <CommentModal
-          videoId={commentVideoId}
-          userId={userId}
-=======
   // Initialize Firebase and authenticate user
   useEffect(() => {
     try {
-      // Read Firebase config from environment variables
       const firebaseConfig = {
         apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
         authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
         projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
         storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-        messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+        messagingSenderId:
+          import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
         appId: import.meta.env.VITE_FIREBASE_APP_ID,
       };
 
-      // Ensure all necessary config values are present
-      if (!firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.projectId || !firebaseConfig.appId) {
-        console.error("Firebase config is incomplete. Please ensure all VITE_FIREBASE_... variables are set in your .env file.");
+      // Check Firebase configuration
+      if (
+        !firebaseConfig.apiKey ||
+        !firebaseConfig.authDomain ||
+        !firebaseConfig.projectId ||
+        !firebaseConfig.appId
+      ) {
+        console.error(
+          "Firebase config is incomplete. Please ensure all VITE_FIREBASE_... variables are set."
+        );
+
         setUserId(crypto.randomUUID());
         setFirebaseInitialized(true);
         return;
       }
 
+      // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const firestore = getFirestore(app);
       const firebaseAuth = getAuth(app);
@@ -109,29 +83,43 @@ const App = () => {
       setDb(firestore);
       setAuth(firebaseAuth);
 
-      // Listen for auth state changes
-      const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
-        if (user) {
-          setUserId(user.uid);
-          setFirebaseInitialized(true);
-        } else {
-          try {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-              await signInWithCustomToken(firebaseAuth, __initial_auth_token);
-            } else {
-              await signInAnonymously(firebaseAuth);
-            }
-          } catch (error) {
-            console.error("Firebase authentication failed:", error);
-            setUserId(crypto.randomUUID());
+      // Listen for authentication changes
+      const unsubscribe = onAuthStateChanged(
+        firebaseAuth,
+        async (user) => {
+          if (user) {
+            setUserId(user.uid);
             setFirebaseInitialized(true);
+          } else {
+            try {
+              if (
+                typeof __initial_auth_token !== "undefined" &&
+                __initial_auth_token
+              ) {
+                await signInWithCustomToken(
+                  firebaseAuth,
+                  __initial_auth_token
+                );
+              } else {
+                await signInAnonymously(firebaseAuth);
+              }
+            } catch (error) {
+              console.error(
+                "Firebase authentication failed:",
+                error
+              );
+
+              setUserId(crypto.randomUUID());
+              setFirebaseInitialized(true);
+            }
           }
         }
-      });
+      );
 
       return () => unsubscribe();
-    } catch (e) {
-      console.error("Error initializing Firebase:", e);
+    } catch (error) {
+      console.error("Error initializing Firebase:", error);
+
       setUserId(crypto.randomUUID());
       setFirebaseInitialized(true);
     }
@@ -139,11 +127,18 @@ const App = () => {
 
   return (
     <div className="min-h-screen w-screen bg-gray-950 text-gray-50 font-inter overflow-hidden flex flex-col items-start p-6 md:p-8">
-      {showSplashScreen && <SplashScreen onLoaded={splashScreenLoadedRef} />}
+      
+      {/* Splash Screen */}
+      {showSplashScreen && (
+        <SplashScreen onLoaded={splashScreenLoadedRef} />
+      )}
 
+      {/* Header */}
       <h1 className="text-4xl font-extrabold mb-6 text-zinc-200">
-        Giggle<span className='text-red-400'>Grid</span>
+        Giggle<span className="text-red-400">Grid</span>
       </h1>
+
+      {/* Main Content */}
       <div className="flex-grow w-full flex items-center justify-center">
         {firebaseInitialized ? (
           <MemeReel
@@ -155,26 +150,34 @@ const App = () => {
               if (splashScreenLoadedRef.current) {
                 splashScreenLoadedRef.current();
               }
-              setTimeout(() => setShowSplashScreen(false), 500);
+
+              setTimeout(() => {
+                setShowSplashScreen(false);
+              }, 500);
             }}
-            onOpenComments={handleOpenComments} // Pass the new handler
+            onOpenComments={handleOpenComments}
           />
         ) : (
           <div className="flex flex-col items-center justify-center h-full w-full text-gray-400">
-            <Loader2 className="animate-spin mr-2" size={32} />
-            <p className="mt-2">Initializing Firebase...</p>
+            <Loader2
+              className="animate-spin mr-2"
+              size={32}
+            />
+
+            <p className="mt-2">
+              Initializing Firebase...
+            </p>
           </div>
         )}
       </div>
 
-      {/* Render CommentModal conditionally and outside MemeReel */}
+      {/* Comment Modal */}
       {showCommentModal && commentVideoId && (
         <CommentModal
           videoId={commentVideoId}
           db={db}
           userId={userId}
           appId={appId}
->>>>>>> 7111d9b590bdd83fd1a41192bc7adbfffae00982
           onClose={handleCloseComments}
         />
       )}
@@ -182,8 +185,4 @@ const App = () => {
   );
 };
 
-<<<<<<< HEAD
 export default App;
-=======
-export default App;
->>>>>>> 7111d9b590bdd83fd1a41192bc7adbfffae00982
