@@ -3,7 +3,6 @@ import MemeReel from "./components/MemeReel";
 import SplashScreen from "./components/SplashScreen";
 import CommentModal from "./components/CommentModal";
 
-// Firebase imports
 import { initializeApp } from "firebase/app";
 import {
   getAuth,
@@ -18,35 +17,29 @@ const App = () => {
   const [showSplashScreen, setShowSplashScreen] = useState(true);
   const splashScreenLoadedRef = useRef(null);
 
-  // Firebase state
   const [db, setDb] = useState(null);
   const [auth, setAuth] = useState(null);
   const [userId, setUserId] = useState(null);
   const [firebaseInitialized, setFirebaseInitialized] = useState(false);
 
-  // Comment modal state
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [commentVideoId, setCommentVideoId] = useState(null);
 
-  // App ID with fallback
   const appId =
     typeof __app_id !== "undefined"
       ? __app_id
       : "default-gigglegrid-app-id";
 
-  // Open comment modal
   const handleOpenComments = (videoId) => {
     setCommentVideoId(videoId);
     setShowCommentModal(true);
   };
 
-  // Close comment modal
   const handleCloseComments = () => {
     setShowCommentModal(false);
     setCommentVideoId(null);
   };
 
-  // Initialize Firebase and authenticate user
   useEffect(() => {
     try {
       const firebaseConfig = {
@@ -59,7 +52,6 @@ const App = () => {
         appId: import.meta.env.VITE_FIREBASE_APP_ID,
       };
 
-      // Check Firebase configuration
       if (
         !firebaseConfig.apiKey ||
         !firebaseConfig.authDomain ||
@@ -67,7 +59,7 @@ const App = () => {
         !firebaseConfig.appId
       ) {
         console.error(
-          "Firebase config is incomplete. Please ensure all VITE_FIREBASE_... variables are set."
+          "Firebase config is incomplete. Check your VITE_FIREBASE_ environment variables."
         );
 
         setUserId(crypto.randomUUID());
@@ -75,7 +67,6 @@ const App = () => {
         return;
       }
 
-      // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const firestore = getFirestore(app);
       const firebaseAuth = getAuth(app);
@@ -83,7 +74,6 @@ const App = () => {
       setDb(firestore);
       setAuth(firebaseAuth);
 
-      // Listen for authentication changes
       const unsubscribe = onAuthStateChanged(
         firebaseAuth,
         async (user) => {
@@ -104,11 +94,7 @@ const App = () => {
                 await signInAnonymously(firebaseAuth);
               }
             } catch (error) {
-              console.error(
-                "Firebase authentication failed:",
-                error
-              );
-
+              console.error("Firebase authentication failed:", error);
               setUserId(crypto.randomUUID());
               setFirebaseInitialized(true);
             }
@@ -119,7 +105,6 @@ const App = () => {
       return () => unsubscribe();
     } catch (error) {
       console.error("Error initializing Firebase:", error);
-
       setUserId(crypto.randomUUID());
       setFirebaseInitialized(true);
     }
@@ -127,18 +112,14 @@ const App = () => {
 
   return (
     <div className="min-h-screen w-screen bg-gray-950 text-gray-50 font-inter overflow-hidden flex flex-col items-start p-6 md:p-8">
-      
-      {/* Splash Screen */}
       {showSplashScreen && (
         <SplashScreen onLoaded={splashScreenLoadedRef} />
       )}
 
-      {/* Header */}
       <h1 className="text-4xl font-extrabold mb-6 text-zinc-200">
         Giggle<span className="text-red-400">Grid</span>
       </h1>
 
-      {/* Main Content */}
       <div className="flex-grow w-full flex items-center justify-center">
         {firebaseInitialized ? (
           <MemeReel
@@ -159,19 +140,12 @@ const App = () => {
           />
         ) : (
           <div className="flex flex-col items-center justify-center h-full w-full text-gray-400">
-            <Loader2
-              className="animate-spin mr-2"
-              size={32}
-            />
-
-            <p className="mt-2">
-              Initializing Firebase...
-            </p>
+            <Loader2 className="animate-spin" size={32} />
+            <p className="mt-2">Initializing Firebase...</p>
           </div>
         )}
       </div>
 
-      {/* Comment Modal */}
       {showCommentModal && commentVideoId && (
         <CommentModal
           videoId={commentVideoId}
